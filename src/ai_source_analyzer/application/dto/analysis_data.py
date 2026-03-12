@@ -1,10 +1,9 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 from ai_source_analyzer.domain.entities.llm_response import LLMResponse
 
 
-@dataclass(frozen=True)
-class AnalysisData:
+class AnalysisData(BaseModel):
     queries: list[str]
     providers: list[str]
     responses: list[LLMResponse]
