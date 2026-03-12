@@ -1,8 +1,8 @@
 from urllib.parse import urlparse
 
-from ai_source_analyzer.providers.base import BaseProvider
-from ai_source_analyzer.models.response import LLMResponse
-from ai_source_analyzer.models.source import SourceItem
+from ai_source_analyzer.domain.entities.llm_response import LLMResponse
+from ai_source_analyzer.domain.entities.source import SourceItem
+from ai_source_analyzer.infrastructure.providers.base import BaseProvider
 
 
 class MockProvider(BaseProvider):
@@ -15,6 +15,11 @@ class MockProvider(BaseProvider):
             "sources": [
                 {
                     "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+                    "title": "Мужские электробритвы",
+                    "snippet": "Подборка и каталог товаров",
+                },
+                {
+                    "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54943/list",
                     "title": "Мужские электробритвы",
                     "snippet": "Подборка и каталог товаров",
                 },

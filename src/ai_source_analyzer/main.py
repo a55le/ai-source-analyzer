@@ -5,37 +5,30 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from ai_source_analyzer.core.provider_loader import load_providers
-from ai_source_analyzer.core.providers_registry import ProvidersRegistry
-from ai_source_analyzer.core.runner import QueryRunner
-from ai_source_analyzer.report import CliReporter, JsonReporter, ReportData
+from ai_source_analyzer.application.dto.report_data import ReportData
+from ai_source_analyzer.application.use_cases.run_queries import RunQueriesUseCase
+from ai_source_analyzer.infrastructure.config.settings import settings
+from ai_source_analyzer.infrastructure.io.query_file_reader import QueryFileReader
+from ai_source_analyzer.infrastructure.logging.logger import logger
+from ai_source_analyzer.infrastructure.providers.provider_loader import load_providers
+from ai_source_analyzer.infrastructure.providers.providers_registry import (
+    ProvidersRegistry,
+)
+from ai_source_analyzer.infrastructure.reporters.cli_reporter import CliReporter
+from ai_source_analyzer.infrastructure.reporters.json_reporter import JsonReporter
 
 app = typer.Typer(add_completion=False)
 console = Console()
 
 
-def warn(message: str) -> None:
-    console.print(f"[yellow]Warning:[/yellow] {message}")
-
-
 def build_registry() -> ProvidersRegistry:
     registry = ProvidersRegistry()
-    load_providers(registry=registry)
+    load_providers(
+        registry=registry,
+        settings=settings,
+        logger=logger,
+    )
     return registry
-
-
-def read_queries(path: Path) -> list[str]:
-    if not path.exists():
-        raise FileNotFoundError(f"File not found: {path}")
-
-    content = path.read_text(encoding="utf-8")
-
-    queries = [line.strip() for line in content.splitlines() if line.strip()]
-
-    if not queries:
-        raise ValueError("No queries found in file")
-
-    return queries
 
 
 def select_providers(registry: ProvidersRegistry, provider_names: list[str] | None):
@@ -67,10 +60,11 @@ def main(
     ),
 ):
     registry = build_registry()
-    runner = QueryRunner()
+    query_reader = QueryFileReader()
+    run_queries = RunQueriesUseCase()
 
     try:
-        queries = read_queries(Path(path))
+        queries = query_reader.read(Path(path))
     except Exception as exc:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(1)
@@ -85,7 +79,7 @@ def main(
         console.print("[red]No available providers[/red]")
         raise typer.Exit(1)
 
-    responses = runner.run_many(
+    responses = run_queries.execute(
         providers=providers,
         queries=queries,
     )

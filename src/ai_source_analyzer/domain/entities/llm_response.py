@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from ai_source_analyzer.models.source import SourceItem
+from ai_source_analyzer.domain.entities.source import SourceItem
 
 
 class LLMResponse(BaseModel):

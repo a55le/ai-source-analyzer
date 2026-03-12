@@ -1,7 +1,10 @@
 from collections import defaultdict
 
-from ai_source_analyzer.models.report import DomainMentionsReportItem, MentionLocation
-from ai_source_analyzer.models.response import LLMResponse
+from ai_source_analyzer.domain.entities.domain_report import (
+    DomainMentionsReportItem,
+    MentionLocation,
+)
+from ai_source_analyzer.domain.entities.llm_response import LLMResponse
 
 
 def build_domain_report(

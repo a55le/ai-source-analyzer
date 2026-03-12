@@ -1,11 +1,12 @@
 import json
 from pathlib import Path
 
-from ai_source_analyzer.core.domains_stats_aggregator import build_domain_report
-from ai_source_analyzer.report.base import BaseReporter, ReportData
+from ai_source_analyzer.application.dto.report_data import ReportData
+from ai_source_analyzer.application.ports.reporter import ReporterPort
+from ai_source_analyzer.domain.services.build_domain_report import build_domain_report
 
 
-class JsonReporter(BaseReporter):
+class JsonReporter(ReporterPort):
     def write(self, data: ReportData, output_path: Path | None = None) -> None:
         if output_path is None:
             raise ValueError("Output path is required for JSON reporter")

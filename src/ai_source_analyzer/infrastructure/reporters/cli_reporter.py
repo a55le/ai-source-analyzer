@@ -3,11 +3,12 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from ai_source_analyzer.core.domains_stats_aggregator import get_domains_stats
-from ai_source_analyzer.report.base import BaseReporter, ReportData
+from ai_source_analyzer.application.dto.report_data import ReportData
+from ai_source_analyzer.application.ports.reporter import ReporterPort
+from ai_source_analyzer.domain.services.build_domain_report import get_domains_stats
 
 
-class CliReporter(BaseReporter):
+class CliReporter(ReporterPort):
     def __init__(self, console: Console | None = None) -> None:
         self._console = console or Console()
 

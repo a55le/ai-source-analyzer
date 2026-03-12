@@ -1,5 +1,35 @@
 [
   {
+    "domain": "market.yandex.ru",
+    "mentions": 6,
+    "mentionsIn": [
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+        "query": "топ мужских бритв"
+      },
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54943/list",
+        "query": "топ мужских бритв"
+      },
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+        "query": "лучшие зимние шины"
+      },
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54943/list",
+        "query": "лучшие зимние шины"
+      },
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+        "query": "лучшие игровые ноутбуки"
+      },
+      {
+        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54943/list",
+        "query": "лучшие игровые ноутбуки"
+      }
+    ]
+  },
+  {
     "domain": "journal.tinkoff.ru",
     "mentions": 3,
     "mentionsIn": [
@@ -13,24 +43,6 @@
       },
       {
         "url": "https://journal.tinkoff.ru/list/best-shavers/",
-        "query": "лучшие игровые ноутбуки"
-      }
-    ]
-  },
-  {
-    "domain": "market.yandex.ru",
-    "mentions": 3,
-    "mentionsIn": [
-      {
-        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
-        "query": "топ мужских бритв"
-      },
-      {
-        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
-        "query": "лучшие зимние шины"
-      },
-      {
-        "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
         "query": "лучшие игровые ноутбуки"
       }
     ]
