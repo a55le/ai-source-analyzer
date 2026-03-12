@@ -1,4 +1,5 @@
 from urllib.parse import urlparse
+import time
 
 from ai_source_analyzer.domain.entities.llm_response import LLMResponse
 from ai_source_analyzer.domain.entities.source import SourceItem
@@ -6,6 +7,10 @@ from ai_source_analyzer.infrastructure.providers.base import BaseProvider
 
 
 class MockProvider(BaseProvider):
+    """
+        Моковый провайдер. На проде нужно будет удалить. Сделан чисто для Unit-тестирования
+    """
+
     name = "mock"
     required_env: list[str] = []
 
@@ -49,6 +54,8 @@ class MockProvider(BaseProvider):
                     position=index,
                 )
             )
+            
+        time.sleep(2)
 
         return LLMResponse(
             provider=self.name,

@@ -2,11 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ai_source_analyzer.application.ports.reporter import ReporterPort
 import typer
 from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 
 from ai_source_analyzer.application.dto.analysis_data import AnalysisData
+from ai_source_analyzer.application.ports.reporter import ReporterPort
 from ai_source_analyzer.application.use_cases.run_queries import RunQueriesUseCase
 from ai_source_analyzer.infrastructure.config.settings import settings
 from ai_source_analyzer.infrastructure.io.query_file_reader import QueryFileReader
@@ -79,20 +86,47 @@ def main(
         console.print("[red]No available providers[/red]")
         raise typer.Exit(1)
 
-    responses = run_queries.execute(
-        providers=providers,
-        queries=queries,
-    )
+    total_requests = len(providers) * len(queries)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("Отправка запросов"),
+        BarColumn(),
+        TextColumn("{task.completed}/{task.total}"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task_id = progress.add_task("requests", total=total_requests)
+
+        def on_progress(
+            _provider_name: str,
+            _query: str,
+            completed: int,
+            _total: int,
+        ) -> None:
+            progress.update(
+                task_id,
+                completed=completed,
+            )
+
+        responses = run_queries.execute(
+            providers=providers,
+            queries=queries,
+            on_progress=on_progress,
+        )
+
     report_data = AnalysisData(
         queries=queries,
         providers=[p.name for p in providers],
         responses=responses,
     )
-    
-    ext = output.split('.')[-1] if output else "cli"
+
+    ext = output.split(".")[-1] if output else "cli"
     reporter: ReporterPort = getReporter(ext)
-    
-    reporter.write(data=report_data, output_path=Path(output) if output is not None else None)
+
+    reporter.write(
+        data=report_data, output_path=Path(output) if output is not None else None
+    )
+
 
 if __name__ == "__main__":
     app()
