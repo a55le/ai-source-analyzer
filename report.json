@@ -1,0 +1,152 @@
+{
+  "queries": [
+    "топ мужских бритв",
+    "лучшие зимние шины",
+    "лучшие игровые ноутбуки"
+  ],
+  "providers": [
+    "mock"
+  ],
+  "site_mentions": {
+    "market.yandex.ru": 3,
+    "www.mvideo.ru": 3,
+    "journal.tinkoff.ru": 3
+  },
+  "responses": [
+    {
+      "provider": "mock",
+      "query": "топ мужских бритв",
+      "answer_text": "Тестовый ответ на запрос: топ мужских бритв",
+      "sources": [
+        {
+          "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+          "domain": "market.yandex.ru",
+          "title": "Мужские электробритвы",
+          "position": 1
+        },
+        {
+          "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+          "domain": "www.mvideo.ru",
+          "title": "Электробритвы",
+          "position": 2
+        },
+        {
+          "url": "https://journal.tinkoff.ru/list/best-shavers/",
+          "domain": "journal.tinkoff.ru",
+          "title": "Лучшие бритвы",
+          "position": 3
+        }
+      ],
+      "raw_response": {
+        "answer": "Тестовый ответ на запрос: топ мужских бритв",
+        "sources": [
+          {
+            "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+            "title": "Мужские электробритвы",
+            "snippet": "Подборка и каталог товаров"
+          },
+          {
+            "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+            "title": "Электробритвы",
+            "snippet": "Каталог электробритв"
+          },
+          {
+            "url": "https://journal.tinkoff.ru/list/best-shavers/",
+            "title": "Лучшие бритвы",
+            "snippet": "Подборка популярных моделей"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "mock",
+      "query": "лучшие зимние шины",
+      "answer_text": "Тестовый ответ на запрос: лучшие зимние шины",
+      "sources": [
+        {
+          "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+          "domain": "market.yandex.ru",
+          "title": "Мужские электробритвы",
+          "position": 1
+        },
+        {
+          "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+          "domain": "www.mvideo.ru",
+          "title": "Электробритвы",
+          "position": 2
+        },
+        {
+          "url": "https://journal.tinkoff.ru/list/best-shavers/",
+          "domain": "journal.tinkoff.ru",
+          "title": "Лучшие бритвы",
+          "position": 3
+        }
+      ],
+      "raw_response": {
+        "answer": "Тестовый ответ на запрос: лучшие зимние шины",
+        "sources": [
+          {
+            "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+            "title": "Мужские электробритвы",
+            "snippet": "Подборка и каталог товаров"
+          },
+          {
+            "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+            "title": "Электробритвы",
+            "snippet": "Каталог электробритв"
+          },
+          {
+            "url": "https://journal.tinkoff.ru/list/best-shavers/",
+            "title": "Лучшие бритвы",
+            "snippet": "Подборка популярных моделей"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "mock",
+      "query": "лучшие игровые ноутбуки",
+      "answer_text": "Тестовый ответ на запрос: лучшие игровые ноутбуки",
+      "sources": [
+        {
+          "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+          "domain": "market.yandex.ru",
+          "title": "Мужские электробритвы",
+          "position": 1
+        },
+        {
+          "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+          "domain": "www.mvideo.ru",
+          "title": "Электробритвы",
+          "position": 2
+        },
+        {
+          "url": "https://journal.tinkoff.ru/list/best-shavers/",
+          "domain": "journal.tinkoff.ru",
+          "title": "Лучшие бритвы",
+          "position": 3
+        }
+      ],
+      "raw_response": {
+        "answer": "Тестовый ответ на запрос: лучшие игровые ноутбуки",
+        "sources": [
+          {
+            "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
+            "title": "Мужские электробритвы",
+            "snippet": "Подборка и каталог товаров"
+          },
+          {
+            "url": "https://www.mvideo.ru/category/elektrobritvy-178",
+            "title": "Электробритвы",
+            "snippet": "Каталог электробритв"
+          },
+          {
+            "url": "https://journal.tinkoff.ru/list/best-shavers/",
+            "title": "Лучшие бритвы",
+            "snippet": "Подборка популярных моделей"
+          }
+        ]
+      }
+    }
+  ]
+}
