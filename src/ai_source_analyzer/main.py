@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.table import Table
 
-from ai_source_analyzer.core.domains_stats_aggregator import get_domains_stats
 from ai_source_analyzer.core.provider_loader import load_providers
 from ai_source_analyzer.core.providers_registry import ProvidersRegistry
 from ai_source_analyzer.core.runner import QueryRunner
+from ai_source_analyzer.report import CliReporter, JsonReporter, ReportData
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -32,11 +30,7 @@ def read_queries(path: Path) -> list[str]:
 
     content = path.read_text(encoding="utf-8")
 
-    queries = [
-        line.strip()
-        for line in content.splitlines()
-        if line.strip()
-    ]
+    queries = [line.strip() for line in content.splitlines() if line.strip()]
 
     if not queries:
         raise ValueError("No queries found in file")
@@ -49,18 +43,6 @@ def select_providers(registry: ProvidersRegistry, provider_names: list[str] | No
         return registry.get_many(provider_names)
 
     return registry.all()
-
-
-def print_domain_stats(stats: dict[str, int]) -> None:
-    table = Table(title="Site Mentions")
-
-    table.add_column("Site", style="cyan")
-    table.add_column("Mentions", justify="right")
-
-    for domain, count in stats.items():
-        table.add_row(domain, str(count))
-
-    console.print(table)
 
 
 @app.command()
@@ -107,30 +89,18 @@ def main(
         providers=providers,
         queries=queries,
     )
-
-    domain_stats = get_domains_stats(responses)
+    report_data = ReportData(
+        queries=queries,
+        providers=[p.name for p in providers],
+        responses=responses,
+    )
 
     if output is None:
-        print_domain_stats(domain_stats)
+        CliReporter(console=console).write(report_data)
         return
 
-    payload = {
-        "queries": queries,
-        "providers": [p.name for p in providers],
-        "site_mentions": domain_stats,
-        "responses": [
-            r.model_dump(mode="json", exclude_none=True)
-            for r in responses
-        ],
-    }
-
     out_path = Path(output)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    out_path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    JsonReporter().write(report_data, out_path)
 
     console.print(f"[bold green]Saved JSON:[/bold green] {out_path}")
 

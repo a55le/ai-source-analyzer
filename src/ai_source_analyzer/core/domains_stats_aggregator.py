@@ -1,13 +1,35 @@
-from collections import Counter
+from collections import defaultdict
 
+from ai_source_analyzer.models.report import DomainMentionsReportItem, MentionLocation
 from ai_source_analyzer.models.response import LLMResponse
 
 
-def get_domains_stats(responses: list[LLMResponse]) -> dict[str, int]:
-    counter: Counter[str] = Counter()
-    
+def build_domain_report(
+    responses: list[LLMResponse],
+) -> list[DomainMentionsReportItem]:
+    mentions_by_domain: dict[str, dict[tuple[str, str], MentionLocation]] = defaultdict(
+        dict
+    )
+
     for response in responses:
         for source in response.sources:
-            counter[source.domain] += 1
-            
-    return dict(counter.most_common())
+            url = str(source.url)
+            mentions_by_domain[source.domain].setdefault(
+                (url, response.query),
+                MentionLocation(url=url, query=response.query),
+            )
+
+    items = [
+        DomainMentionsReportItem(
+            domain=domain,
+            mentions=len(mentions_in),
+            mentions_in=list(mentions_in.values()),
+        )
+        for domain, mentions_in in mentions_by_domain.items()
+    ]
+    items.sort(key=lambda item: (-item.mentions, item.domain))
+    return items
+
+
+def get_domains_stats(responses: list[LLMResponse]) -> dict[str, int]:
+    return {item.domain: item.mentions for item in build_domain_report(responses)}
