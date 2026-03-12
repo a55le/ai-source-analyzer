@@ -1,3 +1,3 @@
-from ai_source_analyzer.application.dto.report_data import ReportData
+from ai_source_analyzer.application.dto.analysis_data import AnalysisData
 
-__all__ = ["ReportData"]
+__all__ = ["AnalysisData"]

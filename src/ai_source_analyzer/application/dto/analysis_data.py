@@ -4,7 +4,7 @@ from ai_source_analyzer.domain.entities.llm_response import LLMResponse
 
 
 @dataclass(frozen=True)
-class ReportData:
+class AnalysisData:
     queries: list[str]
     providers: list[str]
     responses: list[LLMResponse]

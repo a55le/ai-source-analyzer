@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ai_source_analyzer.application.ports.reporter import ReporterPort
 import typer
 from rich.console import Console
 
-from ai_source_analyzer.application.dto.report_data import ReportData
+from ai_source_analyzer.application.dto.analysis_data import AnalysisData
 from ai_source_analyzer.application.use_cases.run_queries import RunQueriesUseCase
 from ai_source_analyzer.infrastructure.config.settings import settings
 from ai_source_analyzer.infrastructure.io.query_file_reader import QueryFileReader
@@ -14,8 +15,7 @@ from ai_source_analyzer.infrastructure.providers.provider_loader import load_pro
 from ai_source_analyzer.infrastructure.providers.providers_registry import (
     ProvidersRegistry,
 )
-from ai_source_analyzer.infrastructure.reporters.cli_reporter import CliReporter
-from ai_source_analyzer.infrastructure.reporters.json_reporter import JsonReporter
+from ai_source_analyzer.infrastructure.reporters import getReporter
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -83,21 +83,16 @@ def main(
         providers=providers,
         queries=queries,
     )
-    report_data = ReportData(
+    report_data = AnalysisData(
         queries=queries,
         providers=[p.name for p in providers],
         responses=responses,
     )
-
-    if output is None:
-        CliReporter(console=console).write(report_data)
-        return
-
-    out_path = Path(output)
-    JsonReporter().write(report_data, out_path)
-
-    console.print(f"[bold green]Saved JSON:[/bold green] {out_path}")
-
+    
+    ext = output.split('.')[-1] if output else "cli"
+    reporter: ReporterPort = getReporter(ext)
+    
+    reporter.write(data=report_data, output_path=Path(output) if output is not None else None)
 
 if __name__ == "__main__":
     app()

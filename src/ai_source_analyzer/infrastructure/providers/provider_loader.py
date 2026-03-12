@@ -3,8 +3,8 @@ import inspect
 import pkgutil
 
 import ai_source_analyzer.infrastructure.providers as providers_package
+from ai_source_analyzer.application.ports.logger import LoggerPort
 from ai_source_analyzer.infrastructure.config.settings import Settings
-from ai_source_analyzer.infrastructure.logging.logger import Logger
 from ai_source_analyzer.infrastructure.providers.base import BaseProvider
 from ai_source_analyzer.infrastructure.providers.providers_registry import (
     ProvidersRegistry,
@@ -19,7 +19,7 @@ def _missing_env_keys(settings: Settings, required_env: list[str]) -> list[str]:
 def load_providers(
     registry: ProvidersRegistry,
     settings: Settings,
-    logger: Logger,
+    logger: LoggerPort,
 ) -> list[str]:
     loaded: list[str] = []
     package_name = providers_package.__name__

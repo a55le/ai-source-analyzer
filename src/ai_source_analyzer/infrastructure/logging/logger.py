@@ -1,14 +1,16 @@
 from rich.console import Console
 
+from ai_source_analyzer.application.ports.logger import LoggerPort
 
-class Logger:
+
+class Logger(LoggerPort):
     def __init__(self, console: Console | None = None) -> None:
         self._console = console or Console()
 
     def warn(self, message: str) -> None:
         self._console.print(f"[bold yellow][WARN][/bold yellow] {message}")
 
-    def log(self, message: str) -> None:
+    def info(self, message: str) -> None:
         self._console.print(f"[bold blue][INFO][/bold blue] {message}")
 
     def error(self, message: str) -> None:
