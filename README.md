@@ -34,6 +34,12 @@ ai-source-analyzer --path queries.txt
 analyze-ai-source --path queries.txt --output report.json
 ```
 
+Дописать в существующий JSON-отчёт:
+
+```bash
+analyze-ai-source --path queries.txt --output report.json --append
+```
+
 Запуск только выбранных провайдеров:
 
 ```bash
@@ -45,6 +51,7 @@ analyze-ai-source --path queries.txt --provider mock --provider gigachat
 - `--path`, `-p` — путь к TXT-файлу с запросами (обязательно).
 - `--provider`, `-pr` — имя провайдера (можно указывать несколько раз).
 - `--output`, `-o` — путь к выходному файлу отчёта.
+- `--append`, `-a` — дописать новый результат в существующий JSON-файл (работает только вместе с `--output`).
 
 Если `--output` не указан, используется `cli`-репортер.  
 Если указан, формат определяется по расширению файла (например, `json`).

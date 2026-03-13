@@ -1,26 +1,94 @@
+import atexit
 import json
+import os
+import tempfile
 import urllib.parse
 import urllib.request
-import tempfile
-import os
 
-from gigachat import GigaChat, Messages, MessagesRole, Chat
+from gigachat import Chat, GigaChat, Messages, MessagesRole
+
 from ai_source_analyzer.domain.entities.llm_response import LLMResponse
-from ai_source_analyzer.domain.entities.source import SourceItem
-from ai_source_analyzer.infrastructure.providers.base import BaseProvider
+from ai_source_analyzer.domain.entities.source import HttpUrl, SourceItem
 from ai_source_analyzer.infrastructure.config.settings import settings
-
+from ai_source_analyzer.infrastructure.providers.base import BaseProvider
+from .constants import SYSTEM_PROMPT
 
 CERT_URL = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer"
+CERT_DOWNLOAD_TIMEOUT_SECONDS = 10
+MODEL_NAME = "GigaChat-Max"
+
+_cached_cert_path: str | None = None
+
+
+def _cleanup_cached_cert() -> None:
+    global _cached_cert_path
+    if _cached_cert_path and os.path.exists(_cached_cert_path):
+        os.remove(_cached_cert_path)
+    _cached_cert_path = None
 
 
 def get_cert_path() -> str:
-    cert_data = urllib.request.urlopen(CERT_URL).read()
+    global _cached_cert_path
 
-    with tempfile.NamedTemporaryFile(suffix=".cer", delete=False) as tmp:
-        tmp.write(cert_data)
-        tmp.flush()
-        return tmp.name
+    if _cached_cert_path and os.path.exists(_cached_cert_path):
+        return _cached_cert_path
+
+    cert_data = urllib.request.urlopen(
+        CERT_URL,
+        timeout=CERT_DOWNLOAD_TIMEOUT_SECONDS,
+    ).read()
+
+    with tempfile.NamedTemporaryFile(suffix=".cer", delete=False) as temp_file:
+        temp_file.write(cert_data)
+        temp_file.flush()
+        _cached_cert_path = temp_file.name
+
+    if _cached_cert_path is None:
+        raise RuntimeError("Failed to create certificate file")
+
+    return _cached_cert_path
+
+
+def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
+    answer_text = content
+    sources: list[SourceItem] = []
+
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return answer_text, sources
+
+    try:
+        item = data[0] if data else {}
+    except Exception:
+        item = data
+
+    try:
+        summary = item.get("summary")
+    except Exception:
+        return answer_text, sources
+
+    if summary:
+        answer_text = str(summary).strip()
+
+    raw_sources = item.get("sources", []) or []
+    for index, source in enumerate(raw_sources, start=1):
+        try:
+            url = str(source.get("url", ""))
+
+            title = source.get("title")
+            sources.append(
+                SourceItem(
+                    url=HttpUrl(url),
+                    domain=urllib.parse.urlparse(url).netloc.lower(),
+                    title=str(title).strip() if title else None,
+                    position=index,
+                )
+            )
+        except Exception:
+            continue
+
+    return answer_text, sources
 
 
 class GigaChatProvider(BaseProvider):
@@ -28,73 +96,33 @@ class GigaChatProvider(BaseProvider):
     required_env = ["gigachat_api_key"]
 
     def ask(self, query: str) -> LLMResponse:
-        ca_path = get_cert_path()
-
-        try:
-            with GigaChat(
-                credentials=settings.gigachat_api_key,
-                ca_bundle_file=ca_path,
-            ) as giga:
-                response = giga.chat(
-                    Chat(
-                        model="GigaChat-Max",
-                        messages=[
-                            Messages(
-                                role=MessagesRole.SYSTEM,
-                                content="""
-                                    Проанализируй запрос, используя российские интернет-источники.
-                                    Верни ответ строго в JSON-схеме:
-                                    [
-                                    {
-                                        "summary": "string",
-                                        "sources": [
-                                        {
-                                            "url": "string",
-                                            "title": "string"
-                                        }
-                                        ]
-                                    }
-                                    ]
-                                """.strip(),
-                            ),
-                            Messages(role=MessagesRole.USER, content=query),
-                        ]
-                    )
+        with GigaChat(
+            credentials=settings.gigachat_api_key,
+            ca_bundle_file=get_cert_path(),
+        ) as giga:
+            response = giga.chat(
+                Chat(
+                    model=MODEL_NAME,
+                    messages=[
+                        Messages(
+                            role=MessagesRole.SYSTEM,
+                            content=SYSTEM_PROMPT,
+                        ),
+                        Messages(role=MessagesRole.USER, content=query),
+                    ],
                 )
-
-            content = response.choices[0].message.content
-            sources: list[SourceItem] = []
-            answer_text = content
-
-            try:
-                data = json.loads(content)
-                item = data[0] if isinstance(data, list) and data else {}
-                answer_text = item.get("summary", content)
-
-                for i, s in enumerate(item.get("sources", []), start=1):
-                    url = s.get("url")
-                    if not url:
-                        continue
-
-                    sources.append(
-                        SourceItem(
-                            url=url,
-                            domain=urllib.parse.urlparse(url).netloc.lower(),
-                            title=s.get("title"),
-                            position=i,
-                        )
-                    )
-            except json.JSONDecodeError:
-                answer_text = content
-
-            return LLMResponse(
-                provider=self.name,
-                query=query,
-                answer_text=answer_text,
-                sources=sources,
-                raw_response={"content": content},
             )
 
-        finally:
-            if os.path.exists(ca_path):
-                os.remove(ca_path)
+        content = str(response.choices[0].message.content)
+        answer_text, sources = _parse_content(content)
+
+        return LLMResponse(
+            provider=self.name,
+            query=query,
+            answer_text=answer_text,
+            sources=sources,
+            raw_response={"content": content},
+        )
+
+
+atexit.register(_cleanup_cached_cert)

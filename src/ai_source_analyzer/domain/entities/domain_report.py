@@ -10,6 +10,4 @@ class DomainMentionsReportItem(BaseModel):
 
     domain: str
     mentions: int
-    mentions_in: list[MentionLocation] = Field(
-        serialization_alias="mentionsIn",
-    )
+    mentions_in: list[MentionLocation]

@@ -12,7 +12,12 @@ class CliReporter(ReporterPort):
     def __init__(self, console: Console | None = None) -> None:
         self._console = console or Console()
 
-    def write(self, data: AnalysisData, output_path: Path | None = None) -> None:
+    def write(
+        self,
+        data: AnalysisData,
+        output_path: Path | None = None,
+        append: bool = False,
+    ) -> None:
         stats = get_domains_stats(data.responses)
         table = Table(title="Site Mentions")
         table.add_column("Site", style="cyan")

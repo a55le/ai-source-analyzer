@@ -65,6 +65,12 @@ def main(
         "-o",
         help="Save result JSON to file",
     ),
+    append: bool = typer.Option(
+        False,
+        "--append",
+        "-a",
+        help="Append to existing JSON report if file already exists",
+    ),
 ):
     registry = build_registry()
     query_reader = QueryFileReader()
@@ -122,9 +128,16 @@ def main(
 
     ext = output.split(".")[-1] if output else "cli"
     reporter: ReporterPort = getReporter(ext)
+    output_path = Path(output) if output is not None else None
+
+    if append and output_path is None:
+        console.print("[red]--append requires --output[/red]")
+        raise typer.Exit(1)
 
     reporter.write(
-        data=report_data, output_path=Path(output) if output is not None else None
+        data=report_data,
+        output_path=output_path,
+        append=append,
     )
 
 
