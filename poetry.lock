@@ -174,6 +174,21 @@ files = [
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
 
 [[package]]
+name = "json-repair"
+version = "0.58.5"
+description = "A package to repair broken json strings"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "json_repair-0.58.5-py3-none-any.whl", hash = "sha256:16f65addc58d8e0b2b8514e3f6ea9ff568267ce94ead95f4faf90e40dd35d526"},
+    {file = "json_repair-0.58.5.tar.gz", hash = "sha256:2dfdb44573197eeea8eda23f23677412634b2fe2a93bd1dbe4f1b88e4896efa3"},
+]
+
+[package.extras]
+schema = ["jsonschema (>=4.21)", "pydantic (>=2)"]
+
+[[package]]
 name = "markdown-it-py"
 version = "4.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -498,4 +513,4 @@ typing-extensions = ">=4.12.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "<=3.14, >=3.13"
-content-hash = "c52946514cc331078773379a261a976a62cfad6500599620ad31cac65b8ca067"
+content-hash = "f5f5cbb6fa8f6ed16e8831f9ca177f473c2726dac6b83ded1550aa50bec18415"

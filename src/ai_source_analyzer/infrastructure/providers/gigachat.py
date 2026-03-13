@@ -1,22 +1,43 @@
 import atexit
 import base64
-import json
 import os
 import tempfile
 import urllib.request
 
 from gigachat import Chat, GigaChat, Messages, MessagesRole
+from json_repair import loads as repair_json_loads
+from pydantic.networks import HttpUrl
 
 from ai_source_analyzer.domain.entities.llm_response import LLMResponse
 from ai_source_analyzer.domain.entities.source import SourceItem
 from ai_source_analyzer.infrastructure.config.settings import settings
 from ai_source_analyzer.infrastructure.providers.base import BaseProvider
-from ai_source_analyzer.infrastructure.providers.constants import SYSTEM_PROMPT
-from pydantic.networks import HttpUrl
+
+SYSTEM_PROMPT = """
+Проанализируй запрос, используя российские интернет-источники.
+
+Верни только валидный JSON.
+Не добавляй markdown, тройные кавычки, пояснения, вступительный текст, комментарии и завершающий текст.
+Используй только двойные кавычки в ключах и строках.
+Не используй trailing commas.
+
+Формат ответа:
+[
+  {
+    "summary": "string",
+    "sources": [
+      {
+        "url": "https://example.com",
+        "title": "string"
+      }
+    ]
+  }
+]
+"""
 
 CERT_URL = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer"
 CERT_DOWNLOAD_TIMEOUT_SECONDS = 10
-MODEL_NAME = "GigaChat-Max"
+MODEL_NAME = "GigaChat"
 GIGACHAT_SCOPE = "GIGACHAT_API_PERS"
 
 _cached_cert_path: str | None = None
@@ -76,7 +97,8 @@ def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
     answer_text = content
     sources: list[SourceItem] = []
 
-    data = json.loads(content)
+    payload = _extract_json_payload(content)
+    data = repair_json_loads(payload)
 
     item = data[0]
 
@@ -86,7 +108,7 @@ def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
 
     for source in raw_sources:
         url = str(source.get("url", ""))
-        
+
         sources.append(
             SourceItem(
                 url=HttpUrl(url),
@@ -94,6 +116,25 @@ def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
         )
 
     return answer_text, sources
+
+
+def _extract_json_payload(content: str) -> str:
+    text = content.strip()
+
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+
+    start = text.find("[")
+    end = text.rfind("]")
+    if start != -1 and end != -1 and start < end:
+        text = text[start : end + 1]
+
+    return text
 
 
 class GigaChatProvider(BaseProvider):
