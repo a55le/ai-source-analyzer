@@ -1,133 +1,133 @@
-# import atexit
-# import base64
-# import json
-# import os
-# import tempfile
-# import urllib.request
+import atexit
+import base64
+import json
+import os
+import tempfile
+import urllib.request
 
-# from gigachat import Chat, GigaChat, Messages, MessagesRole
+from gigachat import Chat, GigaChat, Messages, MessagesRole
 
-# from ai_source_analyzer.domain.entities.llm_response import LLMResponse
-# from ai_source_analyzer.domain.entities.source import SourceItem
-# from ai_source_analyzer.infrastructure.config.settings import settings
-# from ai_source_analyzer.infrastructure.providers.base import BaseProvider
-# from ai_source_analyzer.infrastructure.providers.constants import SYSTEM_PROMPT
-# from pydantic.networks import HttpUrl
+from ai_source_analyzer.domain.entities.llm_response import LLMResponse
+from ai_source_analyzer.domain.entities.source import SourceItem
+from ai_source_analyzer.infrastructure.config.settings import settings
+from ai_source_analyzer.infrastructure.providers.base import BaseProvider
+from ai_source_analyzer.infrastructure.providers.constants import SYSTEM_PROMPT
+from pydantic.networks import HttpUrl
 
-# CERT_URL = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer"
-# CERT_DOWNLOAD_TIMEOUT_SECONDS = 10
-# MODEL_NAME = "GigaChat-Max"
-# GIGACHAT_SCOPE = "GIGACHAT_API_PERS"
+CERT_URL = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer"
+CERT_DOWNLOAD_TIMEOUT_SECONDS = 10
+MODEL_NAME = "GigaChat-Max"
+GIGACHAT_SCOPE = "GIGACHAT_API_PERS"
 
-# _cached_cert_path: str | None = None
-# _authorization_secret_hash: dict[tuple[str, str], str] = {}
-
-
-# def _cleanup_cached_cert() -> None:
-#     global _cached_cert_path
-#     if _cached_cert_path and os.path.exists(_cached_cert_path):
-#         os.remove(_cached_cert_path)
-#     _cached_cert_path = None
+_cached_cert_path: str | None = None
+_authorization_secret_hash: dict[tuple[str, str], str] = {}
 
 
-# def get_cert_path() -> str:
-#     global _cached_cert_path
-
-#     if _cached_cert_path and os.path.exists(_cached_cert_path):
-#         return _cached_cert_path
-
-#     cert_data = urllib.request.urlopen(
-#         CERT_URL,
-#         timeout=CERT_DOWNLOAD_TIMEOUT_SECONDS,
-#     ).read()
-
-#     with tempfile.NamedTemporaryFile(suffix=".cer", delete=False) as temp_file:
-#         temp_file.write(cert_data)
-#         temp_file.flush()
-#         _cached_cert_path = temp_file.name
-
-#     if _cached_cert_path is None:
-#         raise RuntimeError("Failed to create certificate file")
-
-#     return _cached_cert_path
+def _cleanup_cached_cert() -> None:
+    global _cached_cert_path
+    if _cached_cert_path and os.path.exists(_cached_cert_path):
+        os.remove(_cached_cert_path)
+    _cached_cert_path = None
 
 
-# def get_authorization_secret() -> str:
-#     client_id = settings.gigachat_client_id
-#     client_secret = settings.gigachat_client_secret
+def get_cert_path() -> str:
+    global _cached_cert_path
 
-#     if client_id is None or client_secret is None:
-#         raise ValueError("Missing gigachat_client_id or gigachat_client_secret")
+    if _cached_cert_path and os.path.exists(_cached_cert_path):
+        return _cached_cert_path
 
-#     cache_key = (client_id, client_secret)
-#     cached = _authorization_secret_hash.get(cache_key)
-#     if cached is not None:
-#         return cached
+    cert_data = urllib.request.urlopen(
+        CERT_URL,
+        timeout=CERT_DOWNLOAD_TIMEOUT_SECONDS,
+    ).read()
 
-#     raw_credentials = f"{client_id}:{client_secret}"
-#     authorization_secret = base64.b64encode(raw_credentials.encode("utf-8")).decode(
-#         "utf-8"
-#     )
-#     _authorization_secret_hash[cache_key] = authorization_secret
-#     return authorization_secret
+    with tempfile.NamedTemporaryFile(suffix=".cer", delete=False) as temp_file:
+        temp_file.write(cert_data)
+        temp_file.flush()
+        _cached_cert_path = temp_file.name
+
+    if _cached_cert_path is None:
+        raise RuntimeError("Failed to create certificate file")
+
+    return _cached_cert_path
 
 
-# def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
-#     answer_text = content
-#     sources: list[SourceItem] = []
+def get_authorization_secret() -> str:
+    client_id = settings.gigachat_client_id
+    client_secret = settings.gigachat_client_secret
 
-#     data = json.loads(content)
+    if client_id is None or client_secret is None:
+        raise ValueError("Missing gigachat_client_id or gigachat_client_secret")
 
-#     item = data[0]
+    cache_key = (client_id, client_secret)
+    cached = _authorization_secret_hash.get(cache_key)
+    if cached is not None:
+        return cached
 
-#     summary = item.get("summary")
-#     answer_text = str(summary).strip()
-#     raw_sources = item.get("sources", [])
+    raw_credentials = f"{client_id}:{client_secret}"
+    authorization_secret = base64.b64encode(raw_credentials.encode("utf-8")).decode(
+        "utf-8"
+    )
+    _authorization_secret_hash[cache_key] = authorization_secret
+    return authorization_secret
 
-#     for source in raw_sources:
-#         url = str(source.get("url", ""))
+
+def _parse_content(content: str) -> tuple[str, list[SourceItem]]:
+    answer_text = content
+    sources: list[SourceItem] = []
+
+    data = json.loads(content)
+
+    item = data[0]
+
+    summary = item.get("summary")
+    answer_text = str(summary).strip()
+    raw_sources = item.get("sources", [])
+
+    for source in raw_sources:
+        url = str(source.get("url", ""))
         
-#         sources.append(
-#             SourceItem(
-#                 url=HttpUrl(url),
-#             )
-#         )
+        sources.append(
+            SourceItem(
+                url=HttpUrl(url),
+            )
+        )
 
-#     return answer_text, sources
-
-
-# class GigaChatProvider(BaseProvider):
-#     name = "gigachat"
-#     required_env = ["gigachat_client_id", "gigachat_client_secret"]
-
-#     def ask(self, query: str) -> LLMResponse:
-#         with GigaChat(
-#             credentials=get_authorization_secret(),
-#             scope=GIGACHAT_SCOPE,
-#             ca_bundle_file=get_cert_path(),
-#         ) as giga:
-#             response = giga.chat(
-#                 Chat(
-#                     model=MODEL_NAME,
-#                     messages=[
-#                         Messages(
-#                             role=MessagesRole.SYSTEM,
-#                             content=SYSTEM_PROMPT,
-#                         ),
-#                         Messages(role=MessagesRole.USER, content=query),
-#                     ],
-#                 )
-#             )
-
-#         content = str(response.choices[0].message.content)
-#         answer_text, sources = _parse_content(content)
-
-#         return LLMResponse(
-#             provider=self.name,
-#             query=query,
-#             answer_text=answer_text,
-#             sources=sources,
-#         )
+    return answer_text, sources
 
 
-# atexit.register(_cleanup_cached_cert)
+class GigaChatProvider(BaseProvider):
+    name = "gigachat"
+    required_env = ["gigachat_client_id", "gigachat_client_secret"]
+
+    def ask(self, query: str) -> LLMResponse:
+        with GigaChat(
+            credentials=get_authorization_secret(),
+            scope=GIGACHAT_SCOPE,
+            ca_bundle_file=get_cert_path(),
+        ) as giga:
+            response = giga.chat(
+                Chat(
+                    model=MODEL_NAME,
+                    messages=[
+                        Messages(
+                            role=MessagesRole.SYSTEM,
+                            content=SYSTEM_PROMPT,
+                        ),
+                        Messages(role=MessagesRole.USER, content=query),
+                    ],
+                )
+            )
+
+        content = str(response.choices[0].message.content)
+        answer_text, sources = _parse_content(content)
+
+        return LLMResponse(
+            provider=self.name,
+            query=query,
+            answer_text=answer_text,
+            sources=sources,
+        )
+
+
+atexit.register(_cleanup_cached_cert)
