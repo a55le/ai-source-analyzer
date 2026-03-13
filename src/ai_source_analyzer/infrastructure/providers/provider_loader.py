@@ -20,6 +20,7 @@ def load_providers(
     registry: ProvidersRegistry,
     settings: Settings,
     logger: LoggerPort,
+    with_mock: bool = False
 ) -> list[str]:
     loaded: list[str] = []
     package_name = providers_package.__name__
@@ -27,6 +28,10 @@ def load_providers(
 
     for module_info in pkgutil.iter_modules(providers_package.__path__):
         module_name = module_info.name
+        
+        if module_name == 'mock' and not with_mock:
+            continue
+        
         if module_name in internal_modules:
             continue
 

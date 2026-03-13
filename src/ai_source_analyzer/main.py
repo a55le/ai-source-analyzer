@@ -28,17 +28,21 @@ app = typer.Typer(add_completion=False)
 console = Console()
 
 
-def build_registry() -> ProvidersRegistry:
+def build_registry(test_mode: bool) -> ProvidersRegistry:
     registry = ProvidersRegistry()
     load_providers(
         registry=registry,
         settings=settings,
         logger=logger,
+        with_mock=test_mode,
     )
     return registry
 
 
-def select_providers(registry: ProvidersRegistry, provider_names: list[str] | None):
+def select_providers(
+    registry: ProvidersRegistry,
+    provider_names: list[str] | None,
+):
     if provider_names:
         return registry.get_many(provider_names)
 
@@ -71,8 +75,14 @@ def main(
         "-a",
         help="Append to existing JSON report if file already exists",
     ),
+    test: bool = typer.Option(
+        False,
+        "--test",
+        "-t",
+        help="Testing mode that enables mock provider, which simulates ai responses"
+    )
 ):
-    registry = build_registry()
+    registry = build_registry(test_mode=test)
     query_reader = QueryFileReader()
     run_queries = RunQueriesUseCase(logger=logger)
 
