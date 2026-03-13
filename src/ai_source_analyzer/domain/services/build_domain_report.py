@@ -1,4 +1,5 @@
 from collections import defaultdict
+from urllib.parse import urlparse
 
 from ai_source_analyzer.domain.entities.domain_report import (
     DomainMentionsReportItem,
@@ -17,7 +18,8 @@ def build_domain_report(
     for response in responses:
         for source in response.sources:
             url = str(source.url)
-            mentions_by_domain[source.domain].setdefault(
+            domain = urlparse(url).netloc.lower()
+            mentions_by_domain[domain].setdefault(
                 (url, response.query),
                 MentionLocation(url=url, query=response.query),
             )

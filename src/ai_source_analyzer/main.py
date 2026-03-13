@@ -74,7 +74,7 @@ def main(
 ):
     registry = build_registry()
     query_reader = QueryFileReader()
-    run_queries = RunQueriesUseCase()
+    run_queries = RunQueriesUseCase(logger=logger)
 
     try:
         queries = query_reader.read(Path(path))

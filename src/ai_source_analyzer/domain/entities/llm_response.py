@@ -8,4 +8,3 @@ class LLMResponse(BaseModel):
     query: str
     answer_text: str
     sources: list[SourceItem]
-    raw_response: dict | None = None

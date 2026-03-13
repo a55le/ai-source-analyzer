@@ -18,7 +18,9 @@ def _merge_reports_by_domain(
             continue
 
         domain = item.get("domain")
-        mentions_in = item.get("mentionsIn") or []
+        mentions_in = item.get("mentions_in")
+        if mentions_in is None:
+            mentions_in = item.get("mentionsIn") or []
         if not isinstance(domain, str) or not isinstance(mentions_in, list):
             continue
 
@@ -28,7 +30,7 @@ def _merge_reports_by_domain(
         {
             "domain": domain,
             "mentions": len(mentions_in),
-            "mentionsIn": mentions_in,
+            "mentions_in": mentions_in,
         }
         for domain, mentions_in in mentions_by_domain.items()
     ]

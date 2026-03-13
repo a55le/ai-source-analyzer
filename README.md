@@ -65,7 +65,7 @@ analyze-ai-source --path queries.txt --provider mock --provider gigachat
   {
     "domain": "market.yandex.ru",
     "mentions": 6,
-    "mentionsIn": [
+    "mentions_in": [
       {
         "url": "https://market.yandex.ru/catalog--elektrobritvy-muzhskie/54913/list",
         "query": "топ мужских бритв"
@@ -75,7 +75,7 @@ analyze-ai-source --path queries.txt --provider mock --provider gigachat
 ]
 ```
 
-`mentions` всегда равно количеству элементов в `mentionsIn`.
+`mentions` всегда равно количеству элементов в `mentions_in`.
 
 ## Как добавить свой провайдер
 
