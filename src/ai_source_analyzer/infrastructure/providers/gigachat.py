@@ -37,7 +37,7 @@ SYSTEM_PROMPT = """
 
 CERT_URL = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer"
 CERT_DOWNLOAD_TIMEOUT_SECONDS = 10
-MODEL_NAME = "GigaChat"
+DEFAULT_MODEL_NAME = "GigaChat"
 GIGACHAT_SCOPE = "GIGACHAT_API_PERS"
 
 _cached_cert_path: str | None = None
@@ -149,7 +149,7 @@ class GigaChatProvider(BaseProvider):
         ) as giga:
             response = giga.chat(
                 Chat(
-                    model=MODEL_NAME,
+                    model=settings.gigachat_model or DEFAULT_MODEL_NAME,
                     messages=[
                         Messages(
                             role=MessagesRole.SYSTEM,

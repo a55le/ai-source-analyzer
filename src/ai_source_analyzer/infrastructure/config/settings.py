@@ -1,8 +1,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     gigachat_client_id: str | None = None
     gigachat_client_secret: str | None = None
+    gigachat_model: str = "GigaChat"
 
     model_config = SettingsConfigDict(
         env_file=".env",
